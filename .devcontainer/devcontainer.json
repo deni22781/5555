@@ -1,0 +1,21 @@
+{
+  "name": "СПО · Uno WebAssembly",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:10.0-noble",
+  "forwardPorts": [
+    5000
+  ],
+  "portsAttributes": {
+    "5000": {
+      "label": "Учебное приложение Uno",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp"
+      ]
+    }
+  },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y python3 libpython3-stdlib && python3 -c 'import shlex' && dotnet --version && sudo \"$(command -v dotnet)\" workload install wasm-tools && dotnet restore SPOUno/SPOUno.csproj"
+}

@@ -1,0 +1,43 @@
+name: Check Uno WebAssembly
+on:
+  push:
+    paths:
+      - '.devcontainer/**'
+      - 'SPOUno/**'
+      - 'global.json'
+      - 'Directory.*'
+      - '.github/workflows/check-uno.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the exact Codespaces image and check the app
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE:/src" -w /src mcr.microsoft.com/devcontainers/dotnet:10.0-noble bash -c '
+            set -e
+            apt-get update
+            apt-get install -y python3 libpython3-stdlib
+            python3 -c "import shlex; print(shlex.__file__)"
+            dotnet --version
+            dotnet workload install wasm-tools
+            dotnet restore SPOUno/SPOUno.csproj
+            dotnet build SPOUno/SPOUno.csproj -f net10.0-browserwasm --no-restore
+            dotnet run --project SPOUno/SPOUno.csproj -f net10.0-browserwasm --no-build -- --urls http://0.0.0.0:5000 > /tmp/uno.log 2>&1 &
+            app=$!
+            for i in $(seq 1 60); do
+              if curl -fsS http://localhost:5000/ -o /tmp/uno.html; then
+                echo "HTTP response received"
+                kill "$app" || true
+                exit 0
+              fi
+              if ! kill -0 "$app" 2>/dev/null; then cat /tmp/uno.log; exit 1; fi
+              sleep 2
+            done
+            cat /tmp/uno.log
+            exit 1
+          '

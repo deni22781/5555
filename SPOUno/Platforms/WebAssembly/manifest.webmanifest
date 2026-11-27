@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "SPOUno",
+  "display": "standalone",
+  "name": "SPOUno",
+  "short_name": "SPOUno",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}
